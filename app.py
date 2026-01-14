@@ -12,9 +12,6 @@ def create_app(config_class='config.Config'):
     # Register blueprints here
     from routes import main as main_bp
     app.register_blueprint(main_bp)
-
-
-
     return app
 
 if __name__ == '__main__':

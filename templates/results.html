@@ -17,10 +17,15 @@
         <div class="paper-meta">
             <span class="authors">{{ paper.authors|join(', ') }}</span>
             <span class="date">{{ paper.published.strftime('%Y-%m-%d') }}</span>
+            {% if paper.source %}
+            <span class="source"
+                style="background: #e0e0e0; padding: 2px 5px; border-radius: 3px; font-size: 0.85em; margin-left: 8px;">{{
+                paper.source }}</span>
+            {% endif %}
         </div>
         <p class="paper-snippet">{{ paper.summary[:200] }}...</p>
         <div class="paper-actions">
-            <a href="http://arxiv.org/abs/{{ paper.id }}" target="_blank" class="btn-text">Read More &rarr;</a>
+            <a href="{{ paper.arxiv_url }}" target="_blank" class="btn-text">Read More &rarr;</a>
             {% if paper.pdf_link %}
             <a href="{{ paper.pdf_link }}" target="_blank" class="btn-text">PDF</a>
             {% endif %}

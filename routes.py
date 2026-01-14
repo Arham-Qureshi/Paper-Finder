@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, jsonify, send_file, flash, redirect, url_for
 from models import db, Paper, Bookmark, SearchHistory
-from services.arxiv_service import ArxivService
+from services.aggregator_service import PaperAggregatorService
+from services.arxiv_service import ArxivService # Kept for fallback or specific ID lookup if needed
 from services.summarizer_service import SummarizerService
 from services.export_service import ExportService
 import datetime
@@ -8,7 +9,8 @@ import io
 
 main = Blueprint('main', __name__)
 
-arxiv_service = ArxivService()
+aggregator_service = PaperAggregatorService()
+arxiv_service = ArxivService() # Kept for specific ID lookups if aggregator doesn't support get_by_id yet
 summarizer_service = SummarizerService() # Note: This will load the model on startup!
 export_service = ExportService()
 
@@ -28,7 +30,8 @@ def search():
     db.session.add(search_entry)
     db.session.commit()
         
-    papers = arxiv_service.search_papers(query)
+    # Use aggregator
+    papers = aggregator_service.search_papers(query)
     return render_template('results.html', papers=papers, query=query)
 
 @main.route('/paper/<path:paper_id>')
