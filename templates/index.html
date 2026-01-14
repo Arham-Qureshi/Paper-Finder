@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="hero">
+    <h1>Discover Research Papers</h1>
+    <p>Search millions of papers from arXiv</p>
+
+    <form action="/search" method="get" class="search-form">
+        <input type="text" name="q" placeholder="Search topics, authors, keywords..." required>
+        <button type="submit">Search</button>
+    </form>
+
+    {% if history %}
+    <div class="recent-searches">
+        <p>Recent:
+            {% for item in history %}
+            <a href="/search?q={{ item.search_query }}" class="tag">{{ item.search_query }}</a>
+            {% endfor %}
+        </p>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}

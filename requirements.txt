@@ -1,0 +1,14 @@
+Flask
+Flask-SQLAlchemy
+requests
+feedparser
+transformers
+torch
+beautifulsoup4
+html5lib
+reportlab
+pdfkit
+openpyxl
+pandas
+flask-migrate
+python-dotenv

@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="results-header">
+    <h2>Search Results for "{{ query }}"</h2>
+    <a href="/" class="btn-secondary">New Search</a>
+</div>
+
+<div class="papers-grid">
+    {% if papers %}
+    {% for paper in papers %}
+    <article class="paper-card">
+        <div style="display: flex; justify-content: space-between; align-items: start;">
+            <h3 class="paper-title"><a href="/paper/{{ paper.id }}">{{ paper.title }}</a></h3>
+            <button class="btn-icon bookmark-btn" data-paper-id="{{ paper.id }}" title="Bookmark">★</button>
+        </div>
+        <div class="paper-meta">
+            <span class="authors">{{ paper.authors|join(', ') }}</span>
+            <span class="date">{{ paper.published.strftime('%Y-%m-%d') }}</span>
+        </div>
+        <p class="paper-snippet">{{ paper.summary[:200] }}...</p>
+        <div class="paper-actions">
+            <a href="http://arxiv.org/abs/{{ paper.id }}" target="_blank" class="btn-text">Read More &rarr;</a>
+            {% if paper.pdf_link %}
+            <a href="{{ paper.pdf_link }}" target="_blank" class="btn-text">PDF</a>
+            {% endif %}
+        </div>
+    </article>
+    {% endfor %}
+    {% else %}
+    <div class="no-results">
+        <p>No papers found. Try different keywords.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

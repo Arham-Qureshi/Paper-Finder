@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="bookmarks-header">
+    <h1>My Reading List</h1>
+    <div class="export-actions">
+        <span>Export as:</span>
+        <a href="/export/csv" class="btn-sm">CSV</a>
+        <a href="/export/pdf" class="btn-sm">PDF</a>
+    </div>
+</div>
+
+<div class="papers-grid">
+    {% if bookmarks %}
+    {% for bookmark in bookmarks %}
+    <article class="paper-card bookmark-card">
+        <h3 class="paper-title"><a href="/paper/{{ bookmark.paper.id }}">{{ bookmark.paper.title }}</a></h3>
+        <div class="paper-meta">
+            <span class="date">Saved: {{ bookmark.created_at.strftime('%Y-%m-%d') }}</span>
+        </div>
+        <div class="paper-actions">
+            <a href="http://arxiv.org/abs/{{ bookmark.paper.id }}" target="_blank" class="btn-text">View</a>
+            <!-- Add remove button later -->
+        </div>
+    </article>
+    {% endfor %}
+    {% else %}
+    <div class="empty-state">
+        <p>You haven't bookmarked any papers yet.</p>
+        <a href="/" class="btn-primary">Start Searching</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<article class="paper-detail">
+    <header class="detail-header">
+        <div class="breadcrumbs">
+            <a href="javascript:history.back()">← Back to Results</a>
+        </div>
+        <h1 class="detail-title">{{ paper.title if paper.title else 'Untitled' }}</h1>
+        <div class="detail-meta">
+            <p><strong>Authors:</strong>
+                {% if paper.authors is string %}
+                {{ paper.authors }}
+                {% else %}
+                {{ paper.authors|join(', ') }}
+                {% endif %}
+            </p>
+            <p><strong>Published:</strong>
+                {% set pub_date = paper.published_date if paper.published_date is defined else paper.published %}
+                {{ pub_date.strftime('%Y-%m-%d') if pub_date and pub_date.strftime else pub_date }}
+            </p>
+            {% if paper.arxiv_url %}
+            <p><strong>Source:</strong> <a href="{{ paper.arxiv_url }}" target="_blank">View on arXiv</a></p>
+            {% endif %}
+        </div>
+        <div class="detail-actions">
+            {% if paper.pdf_link %}
+            <a href="{{ paper.pdf_link }}" target="_blank" class="btn-primary">View PDF</a>
+            {% endif %}
+            <button id="bookmarkBtn" class="btn-secondary bookmark-btn" data-paper-id="{{ paper.id }}">Bookmark</button>
+            <button id="summarizeBtn" class="btn-accent">✨ AI Summarize</button>
+        </div>
+    </header>
+
+    <div class="grid-layout">
+        <section class="abstract-section">
+            <h2>Abstract</h2>
+            <div class="abstract-text" id="abstractText">
+                {{ paper.summary }}
+            </div>
+        </section>
+
+        <section class="ai-section" id="aiSection" style="display: none;">
+            <h2>AI Summary</h2>
+            <div class="loading-spinner" id="loader">Generating summary...</div>
+            <div class="ai-content" id="aiContent" style="display: none;">
+                <div class="summary-box">
+                    <h3>Summary</h3>
+                    <p id="shortSummary"></p>
+                </div>
+                <div class="summary-box">
+                    <h3>Key Points</h3>
+                    <ul id="bulletPoints"></ul>
+                </div>
+            </div>
+        </section>
+    </div>
+</article>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% endblock %}
