@@ -53,7 +53,16 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.addEventListener('click', async (e) => {
         if (e.target.classList.contains('bookmark-btn')) {
             const btn = e.target;
-            const paperId = btn.getAttribute('data-paper-id');
+            const paperData = {
+                paper_id: btn.getAttribute('data-paper-id'),
+                title: btn.getAttribute('data-title'),
+                authors: btn.getAttribute('data-authors'),
+                published: btn.getAttribute('data-published'),
+                summary: btn.getAttribute('data-summary'),
+                pdf_link: btn.getAttribute('data-pdf-link'),
+                source: btn.getAttribute('data-source'),
+                url: btn.getAttribute('data-url')
+            };
 
             try {
                 const response = await fetch('/bookmark/add', {
@@ -61,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ paper_id: paperId })
+                    body: JSON.stringify(paperData)
                 });
 
                 const data = await response.json();

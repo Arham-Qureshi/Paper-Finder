@@ -12,7 +12,11 @@
     <article class="paper-card">
         <div style="display: flex; justify-content: space-between; align-items: start;">
             <h3 class="paper-title"><a href="/paper/{{ paper.id }}">{{ paper.title }}</a></h3>
-            <button class="btn-icon bookmark-btn" data-paper-id="{{ paper.id }}" title="Bookmark">★</button>
+            <button class="btn-icon bookmark-btn" data-paper-id="{{ paper.id }}" data-title="{{ paper.title }}"
+                data-authors="{{ paper.authors|join(', ') }}"
+                data-published="{{ paper.published.strftime('%Y-%m-%d') }}" data-summary="{{ paper.summary }}"
+                data-pdf-link="{{ paper.pdf_link }}" data-source="{{ paper.source }}" data-url="{{ paper.arxiv_url }}"
+                title="Bookmark">★</button>
         </div>
         <div class="paper-meta">
             <span class="authors">{{ paper.authors|join(', ') }}</span>

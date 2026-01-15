@@ -4,7 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 db = SQLAlchemy()
 
 class Paper(db.Model):
-    id = db.Column(db.String(100), primary_key=True) # arXiv ID
+    id = db.Column(db.String(100), primary_key=True) # ID from service
     title = db.Column(db.String(500), nullable=False)
     authors = db.Column(db.String(500))
     published_date = db.Column(db.Date)
@@ -14,6 +14,8 @@ class Paper(db.Model):
     citation_count = db.Column(db.Integer, default=0)
     ai_summary_short = db.Column(db.Text)
     ai_summary_bullets = db.Column(db.Text)
+    source = db.Column(db.String(50)) # e.g. Arxiv, Semantic Scholar
+    url = db.Column(db.String(500)) # Original link
 
     def __repr__(self):
         return f'<Paper {self.title}>'

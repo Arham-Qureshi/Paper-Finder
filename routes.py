@@ -90,32 +90,36 @@ def add_bookmark():
     if not paper_id:
         return jsonify({'error': 'Paper ID required'}), 400
         
-    # Check if paper exists in DB, if not create it (we need details)
+    # Check if paper exists, if so check bookmark
     paper = Paper.query.get(paper_id)
     if not paper:
-        # In a real app, passing all details from frontend is risky/messy. 
-        # Ideally we fetch from arXiv service again or use the cached data we displayed.
-        # Here we'll expect the frontend to pass minimal necessary info or we re-fetch.
-        # For simplicity, let's assume we re-fetch if missing, or user passed title/etc.
-        
-        # Let's try to fetch from arXiv again to be safe and consistent
-        results = arxiv_service.search_papers(f'id:{paper_id}', max_results=1)
-        if results:
-            p_data = results[0]
+        # Create new paper from request data
+        try:
+            # Parse date if possible
+            pub_date = None
+            if data.get('published'):
+                try:
+                    pub_date = datetime.datetime.strptime(data.get('published'), '%Y-%m-%d').date()
+                except (ValueError, TypeError):
+                    pass
+            
             paper = Paper(
-                id=p_data['id'],
-                title=p_data['title'],
-                authors=', '.join(p_data['authors']),
-                published_date=p_data['published'],
-                summary=p_data['summary'],
-                pdf_link=p_data['pdf_link'],
-                ai_summary_short=None, # Generated on demand
+                id=paper_id,
+                title=data.get('title', 'Unknown Title'),
+                authors=data.get('authors', 'Unknown Authors'),
+                published_date=pub_date,
+                summary=data.get('summary', ''),
+                pdf_link=data.get('pdf_link'),
+                source=data.get('source', 'Unknown'),
+                url=data.get('url'),
+                ai_summary_short=None,
                 ai_summary_bullets=None
             )
             db.session.add(paper)
             db.session.commit()
-        else:
-             return jsonify({'error': 'Paper not found on arXiv'}), 404
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'error': f'Failed to save paper details: {str(e)}'}), 500
 
     # Check if already bookmarked
     if Bookmark.query.filter_by(paper_id=paper_id).first():
