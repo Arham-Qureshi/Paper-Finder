@@ -11,7 +11,6 @@ main = Blueprint('main', __name__)
 
 aggregator_service = PaperAggregatorService()
 arxiv_service = ArxivService() # Kept for specific ID lookups if aggregator doesn't support get_by_id yet
-summarizer_service = SummarizerService() # Note: This will load the model on startup!
 export_service = ExportService()
 
 @main.route('/')
@@ -65,6 +64,13 @@ def paper_detail(paper_id):
 
 @main.route('/summarize', methods=['POST'])
 def summarize():
+    # Lazy load to avoid blocking startup if models missing
+    try:
+        from services.summarizer_service import SummarizerService
+        summarizer_service = SummarizerService()
+    except ImportError:
+        return jsonify({'error': 'Summarizer service not available (dependencies missing)'}), 503
+
     text = request.json.get('text')
     if not text:
         return jsonify({'error': 'No text provided'}), 400
@@ -90,19 +96,38 @@ def add_bookmark():
     if not paper_id:
         return jsonify({'error': 'Paper ID required'}), 400
         
-    # Check if paper exists, if so check bookmark
-    paper = Paper.query.get(paper_id)
-    if not paper:
-        # Create new paper from request data
-        try:
-            # Parse date if possible
-            pub_date = None
-            if data.get('published'):
-                try:
-                    pub_date = datetime.datetime.strptime(data.get('published'), '%Y-%m-%d').date()
-                except (ValueError, TypeError):
-                    pass
-            
+    # Check if already bookmarked
+    if Bookmark.query.filter_by(paper_id=paper_id).first():
+       return jsonify({'message': 'Already bookmarked'}), 200
+
+    # Create new bookmark with all details
+    try:
+        # Parse date if possible
+        pub_date = None
+        if data.get('published'):
+            try:
+                pub_date = datetime.datetime.strptime(data.get('published'), '%Y-%m-%d').date()
+            except (ValueError, TypeError):
+                pass
+        
+        bookmark = Bookmark(
+            paper_id=paper_id,
+            title=data.get('title', 'Unknown Title'),
+            authors=data.get('authors', 'Unknown Authors'),
+            abstract=data.get('summary', ''),
+            pdf_url=data.get('pdf_link'),
+            published_date=pub_date,
+            url=data.get('url'),
+            source=data.get('source', 'Unknown'),
+            user_notes=None,
+            tags=None
+        )
+        
+        # Also ensure Paper exists for referential integrity if we are keeping the FK
+        # But per requirements, Bookmark table stores data. 
+        # We can also upsert Paper to keep things consistent.
+        paper = Paper.query.get(paper_id)
+        if not paper:
             paper = Paper(
                 id=paper_id,
                 title=data.get('title', 'Unknown Title'),
@@ -112,24 +137,16 @@ def add_bookmark():
                 pdf_link=data.get('pdf_link'),
                 source=data.get('source', 'Unknown'),
                 url=data.get('url'),
-                ai_summary_short=None,
-                ai_summary_bullets=None
             )
             db.session.add(paper)
-            db.session.commit()
-        except Exception as e:
-            db.session.rollback()
-            return jsonify({'error': f'Failed to save paper details: {str(e)}'}), 500
-
-    # Check if already bookmarked
-    if Bookmark.query.filter_by(paper_id=paper_id).first():
-       return jsonify({'message': 'Already bookmarked'}), 200
-
-    bookmark = Bookmark(paper_id=paper_id)
-    db.session.add(bookmark)
-    db.session.commit()
-    
-    return jsonify({'message': 'Bookmark added successfully'}), 201
+        
+        db.session.add(bookmark)
+        db.session.commit()
+        return jsonify({'message': 'Bookmark added successfully'}), 201
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Failed to add bookmark: {str(e)}'}), 500
 
 @main.route('/export/<format>')
 def export_bookmarks(format):

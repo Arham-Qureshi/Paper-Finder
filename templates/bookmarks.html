@@ -14,20 +14,24 @@
     {% if bookmarks %}
     {% for bookmark in bookmarks %}
     <article class="paper-card bookmark-card">
-        <h3 class="paper-title"><a href="/paper/{{ bookmark.paper.id }}">{{ bookmark.paper.title }}</a></h3>
+        <h3 class="paper-title"><a href="/paper/{{ bookmark.paper_id }}">{{ bookmark.title }}</a></h3>
         <div class="paper-meta">
+            <span class="authors">{{ bookmark.authors or 'Unknown Authors' }}</span>
             <span class="date">Saved: {{ bookmark.created_at.strftime('%Y-%m-%d') }}</span>
-            {% if bookmark.paper.source %}
+            {% if bookmark.source %}
             <span class="source"
                 style="background: #e0e0e0; padding: 2px 5px; border-radius: 3px; font-size: 0.85em; margin-left: 8px;">{{
-                bookmark.paper.source }}</span>
+                bookmark.source }}</span>
             {% endif %}
         </div>
         <div class="paper-actions">
-            {% if bookmark.paper.url %}
-            <a href="{{ bookmark.paper.url }}" target="_blank" class="btn-text">View</a>
+            {% if bookmark.url %}
+            <a href="{{ bookmark.url }}" target="_blank" class="btn-text">View</a>
             {% else %}
-            <a href="http://arxiv.org/abs/{{ bookmark.paper.id }}" target="_blank" class="btn-text">View</a>
+            <a href="http://arxiv.org/abs/{{ bookmark.paper_id }}" target="_blank" class="btn-text">View</a>
+            {% endif %}
+            {% if bookmark.pdf_url %}
+            <a href="{{ bookmark.pdf_url }}" target="_blank" class="btn-text">PDF</a>
             {% endif %}
             <!-- Add remove button later -->
         </div>

@@ -42,4 +42,51 @@
     </div>
     {% endif %}
 </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const bookmarkBtns = document.querySelectorAll('.bookmark-btn');
+
+        bookmarkBtns.forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const paperId = btn.dataset.paperId;
+                const data = {
+                    paper_id: paperId,
+                    title: btn.dataset.title,
+                    authors: btn.dataset.authors,
+                    published: btn.dataset.published,
+                    summary: btn.dataset.summary,
+                    pdf_link: btn.dataset.pdfLink,
+                    source: btn.dataset.source,
+                    url: btn.dataset.url
+                };
+
+                try {
+                    const response = await fetch('/bookmark/add', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(data)
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok || result.message === 'Already bookmarked') {
+                        btn.textContent = '★ Bookmarked';
+                        btn.classList.add('bookmarked');
+                        btn.style.color = '#f1c40f'; // Gold color
+                        btn.disabled = true;
+                    } else {
+                        alert('Error: ' + result.error);
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Failed to bookmark paper');
+                }
+            });
+        });
+    });
+</script>
 {% endblock %}
